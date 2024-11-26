@@ -1,0 +1,69 @@
+import heapq
+
+class Grafo:
+    def __init__(self):
+        self.grafo = {}
+
+    def agregar_hospital(self, hospital):
+        if hospital not in self.grafo:
+            self.grafo[hospital] = []
+
+    def agregar_conexion(self, hospital1, hospital2, peso):
+        self.grafo[hospital1].append((hospital2, peso))
+        self.grafo[hospital2].append((hospital1, peso))  # Si es no dirigido
+
+    def dfs(self, nodo, visitados=None):
+        if visitados is None:
+            visitados = set()
+        visitados.add(nodo)
+        for vecino, _ in self.grafo[nodo]:
+            if vecino not in visitados:
+                self.dfs(vecino, visitados)
+        return visitados
+
+    def bfs(self, inicio):
+        visitados = set()
+        cola = [inicio]
+        while cola:
+            nodo = cola.pop(0)
+            if nodo not in visitados:
+                visitados.add(nodo)
+                for vecino, _ in self.grafo[nodo]:
+                    cola.append(vecino)
+        return visitados
+
+    def ordenamiento_topologico(self):
+        visitados = set()
+        pila = []
+
+        def dfs(nodo):
+            visitados.add(nodo)
+            for vecino, _ in self.grafo[nodo]:
+                if vecino not in visitados:
+                    dfs(vecino)
+            pila.append(nodo)
+
+        for nodo in self.grafo:
+            if nodo not in visitados:
+                dfs(nodo)
+
+        return pila[::-1]  # Retornar en orden inverso
+
+    def dijkstra(self, inicio):
+        distancias = {nodo: float('infinity') for nodo in self.grafo}
+        distancias[inicio] = 0
+        cola_prioridad = [(0, inicio)]
+
+        while cola_prioridad:
+            distancia_actual, nodo_actual = heapq.heappop(cola_prioridad)
+
+            if distancia_actual > distancias[nodo_actual]:
+                continue
+
+            for vecino, peso in self.grafo[nodo_actual]:
+                distancia = distancia_actual + peso
+                if distancia < distancias[vecino]:
+                    distancias[vecino] = distancia
+                    heapq.heappush(cola_prioridad, (distancia, vecino))
+
+        return distancias
